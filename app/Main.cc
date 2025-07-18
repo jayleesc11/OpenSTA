@@ -28,9 +28,6 @@
 #include <stdio.h>
 #include <cstdlib>              // exit
 #include <tcl.h>
-#if TCL_READLINE
-  #include <tclreadline.h>
-#endif
 
 #include "Sta.hh"
 
@@ -118,17 +115,14 @@ staTclAppInit(int argc,
 	      const char *init_filename,
 	      Tcl_Interp *interp)
 {
-  // source init.tcl
-  if (Tcl_Init(interp) == TCL_ERROR)
-    return TCL_ERROR;
-
-#if TCL_READLINE
-  if (Tclreadline_Init(interp) == TCL_ERROR)
-    return TCL_ERROR;
-  Tcl_StaticPackage(interp, "tclreadline", Tclreadline_Init, Tclreadline_SafeInit);
-  if (Tcl_EvalFile(interp, TCLRL_LIBRARY "/tclreadlineInit.tcl") != TCL_OK)
-    printf("Failed to load tclreadline.tcl\n");
-#endif
+  // For static linking, try to skip Tcl_Init if TCL_LIBRARY is not available
+  // and directly initialize the minimal TCL environment
+  if (Tcl_Init(interp) == TCL_ERROR) {
+    // If Tcl_Init fails, try to continue without it for static linking
+    // This is a workaround for static linking where init.tcl is not available
+    printf("Warning: Tcl_Init failed, continuing without standard TCL initialization\n");
+    // Still try to continue - OpenSTA has its own TCL command definitions
+  }
 
   initStaApp(argc, argv, interp);
 
@@ -165,11 +159,7 @@ staTclAppInit(int argc,
       }
     }
   }
-#if TCL_READLINE
-  return Tcl_Eval(interp, "::tclreadline::Loop");
-#else
   return TCL_OK;
-#endif
 }
 
 static void

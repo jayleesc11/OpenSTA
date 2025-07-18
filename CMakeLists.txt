@@ -36,8 +36,12 @@ project(STA VERSION 2.7.0
   LANGUAGES CXX
 )
 
-option(CUDD_DIR "CUDD BDD package directory")
-option(USE_TCL_READLINE "Use TCL readline package" ON)
+# Set CUDD directory directly (no need to specify with -DCUDD_DIR)
+if(NOT CUDD_DIR)
+  set(CUDD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../cudd-3.0.0")
+endif()
+message(STATUS "CUDD BDD package directory: ${CUDD_DIR}")
+
 option(ENABLE_TSAN "Compile with thread santizer enabled" OFF)
 
 # Turn on to debug compiler args.
@@ -55,6 +59,11 @@ message(STATUS "STA git sha: ${STA_GIT_SHA1}")
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RELEASE)
 endif()
+
+# Static linking configuration
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
 
 message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
@@ -338,40 +347,26 @@ add_custom_command(OUTPUT ${STA_TCL_INIT}
 # but not the one in /usr/lib.
 # This calls cmake/FindTCL.cmake
 # Do not use REQUIRED because it also requires TK, which is not used by OpenSTA.
-find_package(TCL)
+# For static linking, explicitly find static TCL library
+find_library(TCL_LIBRARY 
+  NAMES tcl8.6 tcl86 tcl
+  PATHS /usr/lib/x86_64-linux-gnu /usr/lib /lib
+  NO_DEFAULT_PATH
+)
+find_path(TCL_INCLUDE_PATH tcl.h 
+  PATHS /usr/include/tcl8.6 /usr/include
+  NO_DEFAULT_PATH
+)
+
+# Set TCL_LIBRARY_PATH to embed TCL library path at compile time
+set(TCL_LIBRARY_PATH "/usr/share/tcltk/tcl8.6")
+add_definitions(-DTCL_LIBRARY_PATH="${TCL_LIBRARY_PATH}")
+
+# Disable TCL_READLINE to avoid readline dependency issues in static linking
+set(USE_TCL_READLINE OFF)
 
 # Referenced by util/StaConfig.hh.cmake
 set(TCL_READLINE 0)
-# check for tclReadline
-if (USE_TCL_READLINE)
-  set(TCL_READLINE_POSSIBLE_NAMES
-    tclreadline-2.1.0
-    tclreadline-2.3.2
-    tclreadline-2.3.6
-    tclreadline-2.3.7
-    tclreadline-2.3.8
-    )
-  find_library(TCL_READLINE_LIBRARY
-    NAMES tclreadline ${TCL_READLINE_POSSIBLE_NAMES}
-    PATHS ${TCL_LIB_PATHS}
-    )
-  if (TCL_READLINE_LIBRARY)
-    message(STATUS "TCL readline library: ${TCL_READLINE_LIBRARY}")
-  else()
-    message(STATUS "TCL readline library: NOT FOUND")
-  endif()
-
-  find_path(TCL_READLINE_INCLUDE tclreadline.h)
-  if (TCL_READLINE_INCLUDE)
-    message(STATUS "TCL readline header: ${TCL_READLINE_INCLUDE}/tclreadline.h")
-  else()
-    message(STATUS "TCL readline header: NOT FOUND")
-  endif()
-
-  if (TCL_READLINE_LIBRARY AND TCL_READLINE_INCLUDE)
-    set(TCL_READLINE 1)
-  endif()
-endif()
 
 # Zlib
 include(FindZLIB)
@@ -524,16 +519,8 @@ target_include_directories(OpenSTA
   ${CMAKE_CURRENT_BINARY_DIR}
   )
 
-if (TCL_READLINE)
-  target_link_libraries(OpenSTA ${TCL_READLINE_LIBRARY})
-  target_include_directories(OpenSTA
-    PUBLIC
-    ${TCL_READLINE_INCLUDE})
-endif()
-
 # common to gcc/clang
-set(CXX_FLAGS -Wall -Wextra -pedantic -Wcast-qual -Wredundant-decls
-  -Wformat-security -Werror=misleading-indentation)
+set(CXX_FLAGS -Wall -Wextra -pedantic -Wcast-qual -Wredundant-decls -Wformat-security)
 
 if(ENABLE_TSAN)
   message(STATUS "Thread sanitizer: ${ENABLE_TSAN}")
@@ -567,6 +554,23 @@ target_link_libraries(sta
   sta_swig
   OpenSTA
   )
+
+# Add static linking for essential system libraries only
+target_link_libraries(sta
+  -static
+  -Wl,--whole-archive
+  -lpthread
+  -Wl,--no-whole-archive
+  -ldl
+  -lz
+  -lm
+  -lrt
+)
+
+# Set TCL_LIBRARY path at compile time for static linking
+target_compile_definitions(sta PRIVATE
+  TCL_LIBRARY_PATH="/usr/share/tcltk/tcl8.6"
+)
 
 message(STATUS "STA executable: ${CMAKE_BINARY_DIR}/sta")
 
