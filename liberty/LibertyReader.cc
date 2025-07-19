@@ -3376,8 +3376,8 @@ LibertyReader::visitMembers(LibertyAttr *attr)
 	ports_->push_back(port);
       }
     }
-    else
-      libWarn(1239, attr,"members attribute is missing values.");
+    // else
+      // libWarn(1239, attr,"members attribute is missing values.");
   }
 }
 
@@ -4713,8 +4713,8 @@ LibertyReader::makeTable(LibertyAttr *attr,
       table_ = make_shared<Table0>(value);
     }
   }
-  else
-    libWarn(1257, attr, "%s is missing values.", attr->name());
+  // else
+    // libWarn(1257, attr, "%s is missing values.", attr->name());
 }
 
 FloatTable *
@@ -5113,8 +5113,8 @@ LibertyReader::readFloatSeq(LibertyAttr *attr,
 	values = new FloatSeq;
         values->push_back(value->floatValue());
       }
-      else
-	libWarn(1276, attr, "%s is missing values.", attr->name());
+      // else
+	// libWarn(1276, attr, "%s is missing values.", attr->name());
     }
     if (value_iter.hasNext())
       libWarn(1277, attr, "%s has more than one string.", attr->name());
@@ -5125,8 +5125,8 @@ LibertyReader::readFloatSeq(LibertyAttr *attr,
       values = new FloatSeq;
       parseStringFloatList(value->stringValue(), scale, values, attr);
     }
-    else
-      libWarn(1278, attr, "%s is missing values.", attr->name());
+    // else
+      // libWarn(1278, attr, "%s is missing values.", attr->name());
   }
   return values;
 }
