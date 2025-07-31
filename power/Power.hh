@@ -106,6 +106,11 @@ public:
   float clockMinPeriod();
   InstanceSeq highestPowerInstances(size_t count,
                                     const Corner *corner);
+  PwrActivity evalActivity(FuncExpr *expr,
+			   const Instance *inst);
+  float portVoltage(LibertyCell *cell,
+		    const LibertyPort *port,
+		    const DcalcAnalysisPt *dcalc_ap);
 
 protected:
   PwrActivity &activity(const Pin *pin);
@@ -172,9 +177,9 @@ protected:
   float clockDuty(const Clock *clk);
   PwrActivity findSeqActivity(const Instance *inst,
 			      LibertyPort *port);
-  float portVoltage(LibertyCell *cell,
-		    const LibertyPort *port,
-		    const DcalcAnalysisPt *dcalc_ap);
+  // float portVoltage(LibertyCell *cell,
+	// 	    const LibertyPort *port,
+	// 	    const DcalcAnalysisPt *dcalc_ap);
   float pgNameVoltage(LibertyCell *cell,
 		      const char *pg_port_name,
 		      const DcalcAnalysisPt *dcalc_ap);
@@ -185,8 +190,8 @@ protected:
 			       bool invert);
   void seedRegOutputActivities(const Instance *inst,
 			       BfsFwdIterator &bfs);
-  PwrActivity evalActivity(FuncExpr *expr,
-			   const Instance *inst);
+  // PwrActivity evalActivity(FuncExpr *expr,
+	// 		   const Instance *inst);
   PwrActivity evalActivity(FuncExpr *expr,
 			   const Instance *inst,
 			   const LibertyPort *cofactor_port,
