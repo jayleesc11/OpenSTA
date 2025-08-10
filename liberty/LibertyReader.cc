@@ -299,6 +299,7 @@ LibertyReader::defineVisitors()
   defineAttrVisitor("clock_gating_integrated_cell",
 		    &LibertyReader::visitClockGatingIntegratedCell);
   defineAttrVisitor("area", &LibertyReader::visitArea);
+  defineAttrVisitor("single_bit_degenerate", &LibertyReader::visitSingleBitDegenerate);
   defineAttrVisitor("dont_use", &LibertyReader::visitDontUse);
   defineAttrVisitor("is_macro_cell", &LibertyReader::visitIsMacro);
   defineAttrVisitor("is_memory", &LibertyReader::visitIsMemory);
@@ -323,6 +324,7 @@ LibertyReader::defineVisitors()
 		     &LibertyReader::endBundle);
   defineAttrVisitor("direction", &LibertyReader::visitDirection);
   defineAttrVisitor("clock", &LibertyReader::visitClock);
+  defineAttrVisitor("nextstate_type", &LibertyReader::visitNextStateType);
   defineAttrVisitor("bus_type", &LibertyReader::visitBusType);
   defineAttrVisitor("members", &LibertyReader::visitMembers);
   defineAttrVisitor("function", &LibertyReader::visitFunction);
@@ -2965,6 +2967,15 @@ LibertyReader::makeInternalPowers(LibertyPort *port,
 ////////////////////////////////////////////////////////////////
 
 void
+LibertyReader::visitSingleBitDegenerate(LibertyAttr *attr)
+{
+  if (cell_) {
+    const char *single_bit_degenerate_name = getAttrString(attr);
+    cell_->setSingleBitDegenerate(single_bit_degenerate_name);
+  }
+}
+
+void
 LibertyReader::visitArea(LibertyAttr *attr)
 {
   if (cell_) {
@@ -3466,6 +3477,29 @@ LibertyReader::visitDirection(LibertyAttr *attr)
 	if (!port->direction()->isTristate())
 	  port->setDirection(port_dir);
       }
+    }
+  }
+}
+
+void
+LibertyReader::visitNextStateType(LibertyAttr *attr)
+{
+  if (ports_) {
+    const char *type = getAttrString(attr);
+    if (type) {
+      NextStateType next_state_type = NextStateType::none;
+      if (stringEq(type, "data"))
+        next_state_type = NextStateType::data;
+      else if (stringEq(type, "scan_in"))
+        next_state_type = NextStateType::scan_in;
+      else if (stringEq(type, "scan_enable"))
+        next_state_type = NextStateType::scan_enable;
+      else {
+        libWarn(1293, attr, "unknown nextstate_type %s.", type);
+        return;
+      }
+      for (LibertyPort *port : *ports_)
+        port->setNextStateType(next_state_type);
     }
   }
 }

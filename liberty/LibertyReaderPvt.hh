@@ -205,6 +205,7 @@ public:
 
   virtual void visitClockGatingIntegratedCell(LibertyAttr *attr);
   virtual void visitArea(LibertyAttr *attr);
+  virtual void visitSingleBitDegenerate(LibertyAttr *attr);
   virtual void visitDontUse(LibertyAttr *attr);
   virtual void visitIsMacro(LibertyAttr *attr);
   virtual void visitIsMemory(LibertyAttr *attr);
@@ -266,6 +267,7 @@ public:
   virtual void visitClockGateOutPin(LibertyAttr *attr);
   void visitIsPllFeedbackPin(LibertyAttr *attr);
   virtual void visitSignalType(LibertyAttr *attr);
+  virtual void visitNextStateType(LibertyAttr *attr);
   const EarlyLateAll *getAttrEarlyLate(LibertyAttr *attr);
   virtual void visitClock(LibertyAttr *attr);
   virtual void visitIsolationCellDataPin(LibertyAttr *attr);

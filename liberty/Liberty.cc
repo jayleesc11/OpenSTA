@@ -927,6 +927,7 @@ LibertyCell::LibertyCell(LibertyLibrary *library,
   ConcreteCell(name, filename, true, library),
   liberty_library_(library),
   area_(0.0),
+  single_bit_degenerate_(""),
   dont_use_(false),
   is_macro_(false),
   is_memory_(false),
@@ -1069,6 +1070,12 @@ void
 LibertyCell::setArea(float area)
 {
   area_ = area;
+}
+
+void
+LibertyCell::setSingleBitDegenerate(const char *single_bit_degenerate)
+{
+  single_bit_degenerate_ = single_bit_degenerate;
 }
 
 void
@@ -2091,6 +2098,7 @@ LibertyPort::LibertyPort(LibertyCell *cell,
   liberty_cell_(cell),
   bus_dcl_(bus_dcl),
   function_(nullptr),
+  next_state_type_(NextStateType::none),
   scan_signal_type_(ScanSignalType::none),
   tristate_enable_(nullptr),
   scaled_ports_(nullptr),
@@ -2145,6 +2153,12 @@ LibertyPort::setDirection(PortDirection *dir)
   ConcretePort::setDirection(dir);
   if (dir->isInternal())
     liberty_cell_->setHasInternalPorts(true);
+}
+
+void
+LibertyPort::setNextStateType(NextStateType type)
+{
+  next_state_type_ = type;
 }
 
 void

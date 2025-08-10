@@ -98,6 +98,8 @@ enum class ClockGateType { none, latch_posedge, latch_negedge, other };
 
 enum class DelayModelType { cmos_linear, cmos_pwl, cmos2, table, polynomial, dcm };
 
+enum class NextStateType { data, scan_in, scan_enable, none };
+
 enum class ScanSignalType { enable, enable_inverted, clock, clock_a, clock_b,
                             input, input_inverted, output, output_inverted, none };
 
@@ -432,6 +434,8 @@ public:
 
   float area() const { return area_; }
   void setArea(float area);
+  const std::string& singleBitDegenerate() const { return single_bit_degenerate_; }
+  void setSingleBitDegenerate(const char *single_bit_degenerate);
   bool dontUse() const { return dont_use_; }
   void setDontUse(bool dont_use);
   bool isMacro() const { return is_macro_; }
@@ -599,6 +603,7 @@ protected:
 
   LibertyLibrary *liberty_library_;
   float area_;
+  std::string single_bit_degenerate_;
   bool dont_use_;
   bool is_macro_;
   bool is_memory_;
@@ -704,6 +709,8 @@ public:
   LibertyPort *bundlePort() const;
   BusDcl *busDcl() const { return bus_dcl_; }
   void setDirection(PortDirection *dir);
+  NextStateType nextStateType() const { return next_state_type_; }
+  void setNextStateType(NextStateType type);
   ScanSignalType scanSignalType() const { return scan_signal_type_; }
   void setScanSignalType(ScanSignalType type);
   void fanoutLoad(// Return values.
@@ -888,6 +895,7 @@ protected:
   LibertyCell *liberty_cell_;
   BusDcl *bus_dcl_;
   FuncExpr *function_;
+  NextStateType next_state_type_;
   ScanSignalType scan_signal_type_;
   FuncExpr *tristate_enable_;
   ScaledPortMap *scaled_ports_;
