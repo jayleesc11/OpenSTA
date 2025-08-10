@@ -2312,7 +2312,7 @@ proc set_port_delay { cmd sta_cmd cmd_args port_dirs } {
            && [lsearch $port_dirs [pin_direction $pin]] == -1 } {
       sta_warn 440 "$cmd not allowed on [pin_direction $pin] port '[get_full_name $pin]'."
     } elseif { $clk != "NULL" && [lsearch [$clk sources] $pin] != -1 } {
-      sta_warn 441 "$cmd relative to a clock defined on the same port/pin not allowed."
+      # sta_warn 441 "$cmd relative to a clock defined on the same port/pin not allowed."
     } else {
       $sta_cmd $pin $rf $clk $clk_rf $ref_pin\
         $source_latency_included $network_latency_included \

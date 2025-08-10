@@ -1244,6 +1244,7 @@ public:
   PowerResult power(const Instance *inst,
                     const Corner *corner);
   PwrActivity activity(const Pin *pin);
+  void powerPreamble();
 
   void writeTimingModel(const char *lib_name,
                         const char *cell_name,
@@ -1436,7 +1437,7 @@ protected:
   void readLibertyAfter(LibertyLibrary *liberty,
 			Corner *corner,
 			const MinMax *min_max);
-  void powerPreamble();
+//   void powerPreamble();
   void disableFanoutCrprPruning(Vertex *vertex,
 				int &fanou);
   virtual void replaceCell(Instance *inst,
